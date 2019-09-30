@@ -4,9 +4,9 @@ import java.util.Random;
 
 public class AlgoritmoGenetico {
 
-	public final static int SIZE = 50; // total de cargas
-	public final static int TAM = 100; // tamanho da populaçao: quantidade de soluçoes
-	public final static int MAX = 10000; // numero maximo de geraçoes (iteraçoes)
+	public final static int SIZE = 21; // total de cargas
+	public final static int TAM = 11; // tamanho da populaçao: quantidade de soluçoes
+	public final static int MAX = 50; // numero maximo de geraçoes (iteraçoes)
 
 	public void algoritmoGenetico() {
 
@@ -14,7 +14,8 @@ public class AlgoritmoGenetico {
 		int[][] populacao = new int[TAM][SIZE + 1]; // populaçao atual: contem os cromossomos (soluçoes candidatas)
 		int[][] populacaoIntermediaria = new int[TAM][SIZE + 1]; // populaçao intermediaria: corresponde a populaçao em
 																	// construçao
-																	// Obs: A ultima coluna de cada linha da matriz e para armazenar o valor da
+																	// Obs: A ultima coluna de cada linha da matriz e
+																	// para armazenar o valor da
 																	// funçao de aptidao,
 																	// que indica o quao boa eh a soluçao
 
@@ -22,34 +23,33 @@ public class AlgoritmoGenetico {
 		System.out.println("=================================================================");
 		System.out.println("Encontrando a melhor distribuição usando Algoritmos Geneticos ...");
 		System.out.println("=================================================================");
-		inicializaPopulacao(populacao); // cria soluÃ§oes aleatoriamente
+		inicializaPopulacao(populacao); // cria soluções aleatoriamente
 
 		for (int geracao = 0; geracao < MAX; geracao++) {
-			System.out.println("GeraÃ§ao:" + geracao);
+			System.out.println("Geração:" + geracao);
 			calculaFuncoesDeAptidao(populacao); // APTIDAO
 			int melhor = pegaAltaTerra(populacao, populacaoIntermediaria); // ELITISMO
 			if (populacaoIntermediaria[0][SIZE] == 99999) {
 				printaMatriz(populacao);
 				System.out.println("Achou a melhor distribuição: " + melhor);
-				// GG
 				break;
 			}
 			printaMatriz(populacao);
-			crossOver(populacaoIntermediaria, populacao);// CROSSOVER
+			cruzamento(populacaoIntermediaria, populacao);// CROSSOVER
 			if (geracao % 2 == 0)
 				mutacao(populacaoIntermediaria);// MUTACAO
 			populacao = populacaoIntermediaria;
 		}
 	}
 
-	private static void printaMatriz(int[][] populacao) {
+	private void printaMatriz(int[][] populacao) {
 		System.out.println("__________________________________________________________________");
 		for (int i = 0; i < populacao.length; i++) {
 			System.out.print("(" + i + ") ");
 			for (int j = 0; j < populacao[i].length - 1; j++) {
 				System.out.print(populacao[i][j] + " ");
 			}
-			System.out.println(" Aptidao: " + populacao[i][populacao[i].length - 1]);
+			System.out.println(" Aptidão: " + populacao[i][populacao[i].length - 1]);
 		}
 		System.out.println("__________________________________________________________________");
 	}
@@ -57,7 +57,7 @@ public class AlgoritmoGenetico {
 	/**
 	 * Gera população inicial: conjunto de soluções candidatas
 	 */
-	private static void inicializaPopulacao(int[][] populacao) {
+	private void inicializaPopulacao(int[][] populacao) {
 		for (int i = 0; i < populacao.length; i++) {
 			for (int j = 0; j < populacao[i].length - 1; j++) {
 				populacao[i][j] = randomFill();
@@ -65,17 +65,43 @@ public class AlgoritmoGenetico {
 		}
 	}
 
-	private static void calculaFuncoesDeAptidao(int[][] populacao) {
+	private void calculaFuncoesDeAptidao(int[][] populacao) {
 		for (int i = 0; i < populacao.length; i++) {
-			populacao[i][50] = funcaoDeAptidao(populacao[i]);
+			populacao[i][SIZE] = funcaoDeAptidao(populacao[i]);
 		}
+	}
+
+	/**
+	 * Função de aptidao: heuristica que estima a qualidade de uma solução
+	 */
+	private int funcaoDeAptidao(int[] individuo) {
+		int score = 0;
+		int[][] mapa = aptStart(); // recebe mapa novo
+
+		int[] incio = getPosicaoInicial(mapa);
+		int tempLatitude = incio[1];
+		int tempLongetude = incio[0];
+
+		mapa = spawn(tempLatitude, tempLongetude, mapa);
+
+		for (int i = 0; i < individuo.length - 1; i++) {
+
+			int[] matrizLatitudeLongetude = getPosicao(mapa);
+			int latitude = matrizLatitudeLongetude[1];
+			int longitude = matrizLatitudeLongetude[0];
+
+			int movement = individuo[i];
+			score += movimentarNoMapa(latitude, longitude, movement, mapa);
+
+		}
+		return score;
 	}
 
 	/**
 	 * Seleção por elitismo. Encontra a melhor solução e copia para a população
 	 * intermediaria
 	 */
-	private static int pegaAltaTerra(int[][] populacao, int[][] populacaoIntermediaria) {
+	private int pegaAltaTerra(int[][] populacao, int[][] populacaoIntermediaria) {
 		int highlander = 0;
 		int menor = populacao[0][SIZE];
 
@@ -97,7 +123,7 @@ public class AlgoritmoGenetico {
 	 * Seleção por torneio. Escolhe cromossomo (solução) para cruzamento
 	 * ******************************************************* ***************
 	 */
-	private static int[] torneio(int[][] populacao) {
+	private int[] torneio(int[][] populacao) {
 		Random r = new Random();
 		int l1 = r.nextInt(populacao.length);
 		int l2 = r.nextInt(populacao.length);
@@ -114,112 +140,76 @@ public class AlgoritmoGenetico {
 	/**
 	 * Cruzamento uniponto: gera dois filhos e coloca na população intermediaria
 	 */
-	private static void crossOver(int[][] intermediaria, int[][] populacao) {
+	private void cruzamento(int[][] intermediaria, int[][] populacao) {
 		int[] pai;
 		int[] pai2;
-		int corte = SIZE / 2; // tam/2
-		int linha = 1;
-		for (int i = 0; i < TAM; i = i + 2) {
+		// int corte = SIZE / 2; // tam/2
+		int corte = 10;
+		// int linha = 1;
+
+		for (int i = 1; i < TAM; i = i + 2) {
 			do {
 				pai = torneio(populacao);
 				pai2 = torneio(populacao);
 			} while (pai == pai2);
 			System.out.println("Gerando dois filhos...");
 			for (int j = 0; j < corte; j++) {
-				intermediaria[linha][j] = pai[j];
-				intermediaria[linha + 1][j] = pai2[j];
+				intermediaria[i][j] = pai[j];
+				intermediaria[i + 1][j] = pai2[j];
 			}
 			for (int j = corte; j < SIZE; j++) {
-				intermediaria[linha][j] = pai2[j];
-				intermediaria[linha + 1][j] = pai[j];
+				intermediaria[i][j] = pai2[j];
+				intermediaria[i + 1][j] = pai[j];
 			}
-			linha++;
 		}
 	}
 
 	/**
-	 * Mutação
-	 * 
+	 * Mutação é uma transformação que ocorre no cromossomo do individuo durante sua
+	 * formação. A mutação altera os genes do cromossomo
 	 */
-	private static void mutacao(int[][] intermediaria) {
+	private void mutacao(int[][] intermediaria) {
 		Random r = new Random();
 		// System.out.println("Tentando mutacao");
 
 		for (int cont = 1; cont <= 2; cont++) {
-
 			int linha = r.nextInt(TAM);
 			int coluna = r.nextInt(SIZE);
-
-			intermediaria[linha][coluna] = randomFill(intermediaria[linha][coluna]);
+			if (intermediaria[linha][coluna] == 0)
+				intermediaria[linha][coluna] = 1;
+			else
+				intermediaria[linha][coluna] = 0;
 
 			System.out.println("Mutou o cromossomo : " + linha);
 		}
 
 	}
 
-	/**
-	 * Função de aptidao: heuristica que estima a qualidade de uma solução
-	 */
-	private static int funcaoDeAptidao(int[] individuo) {
-		int score = 0;
-		int[][] mapa = aptStart(); // recebe mapa novo
-
-		int[] novoStart = getPositionStart(mapa);
-		int tempLat = novoStart[1];
-		int tempLng = novoStart[0];
-
-		mapa = spawn(tempLat, tempLng, mapa);
-
-		for (int i = 0; i < individuo.length - 1; i++) {
-
-			int[] latlng = getPosition(mapa);
-			int la = latlng[1];
-			int lo = latlng[0];
-
-			// individuo[i] = movimento
-			int movement = individuo[i];
-			score += moveIt(la, lo, movement, mapa);
-
-		}
-		return score;
-	}
-
-	private static int randomFill() {// usado para gerar pops
-
+	private int randomFill() {// usado para gerar pops
 		Random rand = new Random();
 		int randomNum = rand.nextInt(4);
 		return randomNum;
 	}
 
-	private static int randomFill(int val) {// usado pra mutacao
-		int randomNum;
-		do {
-			Random rand = new Random();
-			randomNum = rand.nextInt(3);
-		} while (randomNum == val);
-		return randomNum;
-	}
-
-	private static int moveIt(int lat, int lng, int movement, int[][] mapa) {
-
-		int[] latLngNovo = getNewLatLong(lat, lng, movement);
-		int score = analize(latLngNovo[1], latLngNovo[0], mapa);
-		ModificaMapa(lat, lng, latLngNovo[1], latLngNovo[0], mapa);
+	private int movimentarNoMapa(int latitude, int longetude, int movimento, int[][] mapa) {
+		int[] matrizNovaLatitudeELongetude = getNovoValorLatitudeELongetude(latitude, longetude, movimento);
+		int score = analisaMapa(matrizNovaLatitudeELongetude[1], matrizNovaLatitudeELongetude[0], mapa);
+		atualizaMapa(latitude, longetude, matrizNovaLatitudeELongetude[1], matrizNovaLatitudeELongetude[0], mapa);
 		return score;
 	}
 
-	private static int[][] ModificaMapa(int lat, int lng, int latNovo, int lngNovo, int[][] mapa) {
+	private int[][] atualizaMapa(int latitude, int longetude, int latitudeNova, int longitudeNova, int[][] mapa) {
 		// SE a posicao nova esta dentro do mapa e nao eh uma parede (anda)
-		if (latNovo >= 0 && lngNovo >= 0 && latNovo < mapa.length && lngNovo < mapa.length
-				&& mapa[lngNovo][latNovo] != 1) {
-			mapa[lat][lng] = 3;
-			mapa[latNovo][lngNovo] = 4;
+		if (latitudeNova >= 0 && longitudeNova >= 0 && latitudeNova < mapa.length && longitudeNova < mapa.length
+				&& mapa[longitudeNova][latitudeNova] != 1) {
+			mapa[latitude][longetude] = 3;
+			mapa[latitudeNova][longitudeNova] = 4;
 		}
 		return mapa;
 	}
 
-	private static int[] getNewLatLong(int lat, int lng, int movement) {
-		switch (movement) {
+	private int[] getNovoValorLatitudeELongetude(int lat, int lng, int movimento) {
+		switch (movimento) {
 		case 0:
 			lat--;
 			break;
@@ -242,55 +232,51 @@ public class AlgoritmoGenetico {
 		return new int[] { lat, lng };
 	}
 
-	private static int analize(int lat, int lng, int[][] mapa) {
-		// se estiver nas bordas nem procura pra nao dar erro
-		if (lat < 0 || lng < 0 || lat > 9 || lng > 9) {
-			return score(-1);
+	/**
+	 * Analisa o mapa para ver esta nas bordas para não dar erro e penaliza o agente
+	 * por sair do mapa
+	 * 
+	 */
+	private int analisaMapa(int latitude, int longetude, int[][] mapa) {
+		if (latitude < 0 || longetude < 0 || latitude > 9 || longetude > 9) {
+			return pontuacao(-1);
 		} else {
-			return score(mapa[lng][lat]);
+			return pontuacao(mapa[longetude][latitude]);
 		}
 	}
 
-	private static int score(int novaPosicao) {
+	private int pontuacao(int novaPosicao) {
 		int retorno = 0;
 		switch (novaPosicao) {
 		case 1:
 			retorno = -5;
 			break;
-
 		case 3:
 			retorno = -1;
 			break;
-
 		case -1:
 			retorno = -20;
 			break;
-
 		case 0:
 			retorno = 10;
 			break;
-
 		case 9:
 			retorno = -10;
 			break;
-
 		case 8:
-			retorno = 99999; // terminou
+			retorno = 999; // terminou
 			break;
-
-		case 4:
+		case 4:// o agente não se mexeou ficou parado
 			retorno = 0;
-			// System.out.println("Sem movimentacao");
 			break;
-
 		default:
-			throw new IllegalArgumentException("Argumento inválido");
+			throw new IllegalArgumentException("Opção inválida");
 
 		}
 		return retorno;
 	}
 
-	private static int[][] spawn(int tempLat, int tempLng, int[][] mapa) {
+	private int[][] spawn(int tempLat, int tempLng, int[][] mapa) {
 		for (int i = 0; i < mapa.length; i++) {
 			for (int j = 0; j < mapa.length; j++) {
 				if (j == tempLat && i == tempLng) {
@@ -301,12 +287,12 @@ public class AlgoritmoGenetico {
 		return mapa;
 	}
 
-	private static int[][] aptStart() {
+	private int[][] aptStart() {
 		int[][] mapa = Gerador.labZero();
 		return mapa;
 	}
 
-	private static int[] getPosition(int[][] mapa) {
+	private int[] getPosicao(int[][] mapa) {
 		for (int i = 0; i < mapa.length; i++) {
 			for (int j = 0; j < mapa.length; j++) {
 				if (mapa[i][j] == 4) {
@@ -318,7 +304,7 @@ public class AlgoritmoGenetico {
 
 	}
 
-	private static int[] getPositionStart(int[][] mapa) {
+	private int[] getPosicaoInicial(int[][] mapa) {
 		for (int i = 0; i < mapa.length; i++) {
 			for (int j = 0; j < mapa.length; j++) {
 				if (mapa[i][j] == 9) {

@@ -21,20 +21,20 @@ public class AlgoritmoAEstrela {
 
 		insereAdjacentes(matriz, nodoInicial);
 		Nodo nodoAtual = nodoInicial;
-		while (!nodoAtualIsNodoFinal(nodoFinal, nodoAtual)) {
+		while (!verificaNodoAtualENodoFinal(nodoFinal, nodoAtual)) {
 			for (Nodo nodo : adjacentes) {
 				nodo = heuristica(nodo, nodoFinal);
 			}
-			nodoAtual = findNodoMaisProximoDadaHeuristica();
+			nodoAtual = achaNodoMaisProximodaHeuristica();
 			visitados.add(nodoAtual);
 			adjacentes.remove(nodoAtual);
 			insereAdjacentes(matriz, nodoAtual);
 			for (Nodo nodo : adjacentes) {
-				if (getValorDoNodoNaMatriz(nodo, matriz) == 9)
+				if (getValorNodo(nodo, matriz) == 9)
 					nodoAtual = nodo;
 			}
-			printMatriz(matriz);
-			Thread.sleep(1000);
+			mostrarMatriz(matriz);
+			Thread.sleep(5000);
 		}
 		while (nodoAtual != null) {
 			matriz[nodoAtual.getX()][nodoAtual.getY()] = 2;
@@ -42,7 +42,11 @@ public class AlgoritmoAEstrela {
 		}
 	}
 
-	private void printMatriz(int[][] matriz) {
+	/**
+	 * Número 2 nodo visitado
+	 * Número 3 nodo adjacente 
+	 */
+	private void mostrarMatriz(int[][] matriz) {
 		int[][] newMatriz = matriz;
 
 		for (Nodo nodo : adjacentes) {
@@ -62,11 +66,11 @@ public class AlgoritmoAEstrela {
 		System.out.println();
 	}
 
-	private boolean nodoAtualIsNodoFinal(Nodo nodoFinal, Nodo nodoAtual) {
+	private boolean verificaNodoAtualENodoFinal(Nodo nodoFinal, Nodo nodoAtual) {
 		return (nodoAtual.getX() == nodoFinal.getX()) && (nodoAtual.getY() == nodoFinal.getY());
 	}
 
-	private Nodo findNodoMaisProximoDadaHeuristica() {
+	private Nodo achaNodoMaisProximodaHeuristica() {
 		Nodo menorF = adjacentes.get(0);
 		for (Nodo adjacente : adjacentes) {
 			if (menorF.getFuncao() < adjacente.getFuncao()) {
@@ -76,29 +80,29 @@ public class AlgoritmoAEstrela {
 		return menorF;
 	}
 
-	private int getValorDoNodoNaMatriz(Nodo nodo, int[][] matriz) {
+	private int getValorNodo(Nodo nodo, int[][] matriz) {
 		return matriz[nodo.getX()][nodo.getY()];
 	}
 
 	private void insereAdjacentes(int[][] matriz, Nodo nodoPai) {
 		if (nodoPai.getX() + 1 < matriz.length)
 			if (matriz[nodoPai.getX() + 1][nodoPai.getY()] != 1
-					&& !isNodoInVisitados(nodoPai.getX() + 1, nodoPai.getY()))
+					&& !verificaNodoJaFoiVisitado(nodoPai.getX() + 1, nodoPai.getY()))
 				adjacentes.add(new Nodo(nodoPai.getX() + 1, nodoPai.getY(), nodoPai));
 
 		if (nodoPai.getX() - 1 >= 0)
 			if (matriz[nodoPai.getX() - 1][nodoPai.getY()] != 1
-					&& !isNodoInVisitados(nodoPai.getX() - 1, nodoPai.getY()))
+					&& !verificaNodoJaFoiVisitado(nodoPai.getX() - 1, nodoPai.getY()))
 				adjacentes.add(new Nodo(nodoPai.getX() - 1, nodoPai.getY(), nodoPai));
 
 		if (nodoPai.getY() + 1 < matriz[0].length)
 			if (matriz[nodoPai.getX()][nodoPai.getY() + 1] != 1
-					&& !isNodoInVisitados(nodoPai.getX(), nodoPai.getY() + 1))
+					&& !verificaNodoJaFoiVisitado(nodoPai.getX(), nodoPai.getY() + 1))
 				adjacentes.add(new Nodo(nodoPai.getX(), nodoPai.getY() + 1, nodoPai));
 
 		if (nodoPai.getY() - 1 >= 0)
 			if (matriz[nodoPai.getX()][nodoPai.getY() - 1] != 1
-					&& !isNodoInVisitados(nodoPai.getX(), nodoPai.getY() - 1))
+					&& !verificaNodoJaFoiVisitado(nodoPai.getX(), nodoPai.getY() - 1))
 				adjacentes.add(new Nodo(nodoPai.getX(), nodoPai.getY() - 1, nodoPai));
 	}
 
@@ -107,7 +111,7 @@ public class AlgoritmoAEstrela {
 		return nodo1;
 	}
 
-	private boolean isNodoInVisitados(int x, int y) {
+	private boolean verificaNodoJaFoiVisitado(int x, int y) {
 		for (Nodo nodo : visitados) {
 			if (nodo.getX() == x && nodo.getY() == y)
 				return true;
