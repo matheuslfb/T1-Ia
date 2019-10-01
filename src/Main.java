@@ -12,8 +12,6 @@ public class Main {
 
         
         String arquivo = args[0];
-		//String arquivo = "labirinto1_10.txt";
-        // System.out.println(arquivo);
         int[][] matriz = leitor.leituraArquivo(arquivo);
 
         visualizar.visualizarMatriz(matriz);

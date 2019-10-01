@@ -35,8 +35,6 @@ public class LeitorArquivo {
 		String separator = System.getProperty("file.separator");
 		return caminhoArquivo.getAbsolutePath() + separator
 				+ "txt" + separator + fileName;
-//		 return caminhoArquivo.getAbsolutePath() + separator + "src" + separator + "br" + separator + "pucrs" + separator
-//		 		+ "txt" + separator + fileName;
 	}
 	
 	public void gravarGeneticoTxt(String aux) throws IOException{
