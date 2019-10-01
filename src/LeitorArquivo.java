@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class LeitorArquivo {
@@ -34,7 +35,23 @@ public class LeitorArquivo {
 		String separator = System.getProperty("file.separator");
 		return caminhoArquivo.getAbsolutePath() + separator
 				+ "txt" + separator + fileName;
-		// return caminhoArquivo.getAbsolutePath() + separator + "src" + separator + "br" + separator + "pucrs" + separator
-		// 		+ "txt" + separator + fileName;
+//		 return caminhoArquivo.getAbsolutePath() + separator + "src" + separator + "br" + separator + "pucrs" + separator
+//		 		+ "txt" + separator + fileName;
+	}
+	
+	public void gravarGeneticoTxt(String aux) throws IOException{
+		String texto = "";
+		FileWriter arquivo = new FileWriter(new File("algoritmoGenetico.txt"));		
+		texto += aux;
+		arquivo.write(texto);
+		arquivo.close();
+	}
+	
+	public void gravarAEstrelaTxt(String aux) throws IOException{
+		String texto = "";
+		FileWriter arquivo = new FileWriter(new File("algoritmoAEstrela.txt"));		
+		texto += aux;
+		arquivo.write(texto);
+		arquivo.close();
 	}
 }

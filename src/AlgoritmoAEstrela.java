@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class AlgoritmoAEstrela {
@@ -6,13 +7,15 @@ public class AlgoritmoAEstrela {
 	private ArrayList<Nodo> visitados;
 	private Nodo nodoInicial;
 	private Nodo nodoFinal;
-
+	private int count = 0;
+	public String aux ="";
+	
 	public AlgoritmoAEstrela() {
 		adjacentes = new ArrayList<Nodo>();
 		visitados = new ArrayList<Nodo>();
 	}
 
-	public void buscaCaminhoOtimoAEstrela(int[][] matriz) throws InterruptedException {
+	public void buscaCaminhoOtimoAEstrela(int[][] matriz) throws InterruptedException, IOException {
 		carregaVariaveis(matriz);
 
 		visitados.add(nodoInicial);
@@ -41,10 +44,12 @@ public class AlgoritmoAEstrela {
 	}
 
 	/**
-	 * Nï¿½mero 2 nodo visitado
-	 * Nï¿½mero 3 nodo adjacente 
+	 * Número 2 nodo visitado
+	 * Número 3 nodo adjacente 
+	 * @throws IOException 
 	 */
-	private void mostrarMatriz(int[][] matriz) {
+	private void mostrarMatriz(int[][] matriz) throws IOException {
+		LeitorArquivo testArquivo = new LeitorArquivo();
 		int[][] newMatriz = matriz;
 
 		for (Nodo nodo : adjacentes) {
@@ -53,13 +58,18 @@ public class AlgoritmoAEstrela {
 		for (Nodo nodo : visitados) {
 			newMatriz[nodo.getX()][nodo.getY()] = 2;
 		}
-
+		aux +="Iteração " + count + "\n";
 		for (int i = 0; i < newMatriz.length; i++) {
 			for (int j = 0; j < newMatriz[i].length; j++) {
 				System.out.print(newMatriz[i][j]);
+				aux += newMatriz[i][j];
 			}
+			aux += "\n";
 			System.out.println();
 		}
+		count++;
+		aux += "\n";
+		testArquivo.gravarAEstrelaTxt(aux);
 		System.out.println();
 		System.out.println();
 	}

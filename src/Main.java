@@ -2,12 +2,6 @@
 import java.io.IOException;
 import java.util.Scanner;
 
-
-// import AlgoritmoAEstrela;
-// import AlgoritmoGenetico;
-// import LeitorArquivo;
-// import VisualizarMatriz;
-
 public class Main {
 
 	public static void main(String[] args) throws InterruptedException,IOException {
@@ -18,6 +12,7 @@ public class Main {
 
         
         String arquivo = args[0];
+		//String arquivo = "labirinto1_10.txt";
         // System.out.println(arquivo);
         int[][] matriz = leitor.leituraArquivo(arquivo);
 

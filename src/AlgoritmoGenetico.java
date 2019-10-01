@@ -1,38 +1,48 @@
+import java.io.IOException;
 import java.util.Random;
 
 public class AlgoritmoGenetico {
 
-	public final static int SIZE = 21; // total de cargas
-	public final static int TAM = 11; // tamanho da populaï¿½ao: quantidade de soluï¿½oes
+	public final static int SIZE = 30; // total de cargas
+	public final static int TAM = 20; // tamanho da população: quantidade de soluções
 	public final static int MAX = 50; // numero maximo de geraï¿½oes (iteraï¿½oes)
+	public String aux ="";
+	
+	public void algoritmoGenetico() throws IOException {
 
-	public void algoritmoGenetico() {
-
+		LeitorArquivo testArquivo = new LeitorArquivo();
 		// int[] cargas = GeraCargas(); // cargas definidas em aula
-		int[][] populacao = new int[TAM][SIZE + 1]; // populaï¿½ao atual: contem os cromossomos (soluï¿½oes candidatas)
-		int[][] populacaoIntermediaria = new int[TAM][SIZE + 1]; // populaï¿½ao intermediaria: corresponde a populaï¿½ao em
+		int[][] populacao = new int[TAM][SIZE + 1]; // população atual: contem os cromossomos (soluções candidatas)
+		int[][] populacaoIntermediaria = new int[TAM][SIZE + 1]; // populaï¿½ao intermediaria: corresponde a população
+																	// em
 																	// construï¿½ao
 																	// Obs: A ultima coluna de cada linha da matriz e
 																	// para armazenar o valor da
-																	// funï¿½ao de aptidao,
-																	// que indica o quao boa eh a soluï¿½ao
+																	// função de aptidao,
+																	// que indica o quao boa eh a solução
 
 		// ===========> Ciclo do AG
 		System.out.println("=================================================================");
+		aux += "=================================================================\n";
 		System.out.println("Encontrando a melhor distribuicao usando Algoritmos Geneticos ...");
+		aux += "Encontrando a melhor distribuicao usando Algoritmos Geneticos ...\n";
 		System.out.println("=================================================================");
-		inicializaPopulacao(populacao); // cria soluï¿½ï¿½es aleatoriamente
+		aux += "=================================================================\n";
+		inicializaPopulacao(populacao); // cria soluções aleatoriamente
 
 		for (int geracao = 0; geracao < MAX; geracao++) {
+			aux += "Geração: " + geracao + "\n";
 			System.out.println("Geraï¿½ï¿½o:" + geracao);
 			calculaFuncoesDeAptidao(populacao); // APTIDAO
 			int melhor = pegaAltaTerra(populacao, populacaoIntermediaria); // ELITISMO
-			if (populacaoIntermediaria[0][SIZE] == 99999) {
+			if (populacaoIntermediaria[0][SIZE] == 999) {
 				printaMatriz(populacao);
+				aux += "Achou a melhor distribuicao: " + melhor + "\n";
+				testArquivo.gravarGeneticoTxt(aux);
 				System.out.println("Achou a melhor distribuicao: " + melhor);
 				break;
 			}
-			printaMatriz(populacao);
+			printaMatriz(populacao);			
 			cruzamento(populacaoIntermediaria, populacao);// CROSSOVER
 			if (geracao % 2 == 0)
 				mutacao(populacaoIntermediaria);// MUTACAO
@@ -40,20 +50,28 @@ public class AlgoritmoGenetico {
 		}
 	}
 
-	private void printaMatriz(int[][] populacao) {
+	private void printaMatriz(int[][] populacao) throws IOException {
+		LeitorArquivo testArquivo = new LeitorArquivo();
 		System.out.println("__________________________________________________________________");
+		aux += "__________________________________________________________________\n";
 		for (int i = 0; i < populacao.length; i++) {
+			aux += "(" + i + ") ";
 			System.out.print("(" + i + ") ");
 			for (int j = 0; j < populacao[i].length - 1; j++) {
+				aux += populacao[i][j] + " ";
 				System.out.print(populacao[i][j] + " ");
 			}
+			aux += " Aptidao: " + populacao[i][populacao[i].length - 1] + "\n";
 			System.out.println(" Aptidao: " + populacao[i][populacao[i].length - 1]);
 		}
+		aux += "__________________________________________________________________\n";
 		System.out.println("__________________________________________________________________");
+
+		testArquivo.gravarGeneticoTxt(aux);
 	}
 
 	/**
-	 * Gera populaï¿½ï¿½o inicial: conjunto de soluï¿½ï¿½es candidatas
+	 * Gera população inicial: conjunto de soluções candidatas
 	 */
 	private void inicializaPopulacao(int[][] populacao) {
 		for (int i = 0; i < populacao.length; i++) {
@@ -70,7 +88,7 @@ public class AlgoritmoGenetico {
 	}
 
 	/**
-	 * Funï¿½ï¿½o de aptidao: heuristica que estima a qualidade de uma soluï¿½ï¿½o
+	 * Função de aptidao: heuristica que estima a qualidade de uma solução
 	 */
 	private int funcaoDeAptidao(int[] individuo) {
 		int score = 0;
@@ -96,10 +114,12 @@ public class AlgoritmoGenetico {
 	}
 
 	/**
-	 * Seleï¿½ï¿½o por elitismo. Encontra a melhor soluï¿½ï¿½o e copia para a populaï¿½ï¿½o
+	 * Seleção por elitismo. Encontra a melhor solução e copia para a população
 	 * intermediaria
+	 * @throws IOException 
 	 */
-	private int pegaAltaTerra(int[][] populacao, int[][] populacaoIntermediaria) {
+	private int pegaAltaTerra(int[][] populacao, int[][] populacaoIntermediaria) throws IOException {
+		LeitorArquivo leitor = new LeitorArquivo();
 		int highlander = 0;
 		int menor = populacao[0][SIZE];
 
@@ -109,7 +129,9 @@ public class AlgoritmoGenetico {
 				highlander = i;
 			}
 		}
-		System.out.println("Seleï¿½ï¿½o por elitismo - melhor dessa geracao: " + highlander);
+		aux += "Seleção por elitismo - melhor dessa geração: " + highlander + "\n";
+		leitor.gravarGeneticoTxt(aux);
+		System.out.println("Seleção por elitismo - melhor dessa geração: " + highlander);
 
 		for (int i = 0; i < SIZE + 1; i++) {
 			populacaoIntermediaria[0][i] = populacao[highlander][i];
@@ -118,7 +140,7 @@ public class AlgoritmoGenetico {
 	}
 
 	/**
-	 * Seleï¿½ï¿½o por torneio. Escolhe cromossomo (soluï¿½ï¿½o) para cruzamento
+	 * Seleção por torneio. Escolhe cromossomo (solução) para cruzamento
 	 * ******************************************************* ***************
 	 */
 	private int[] torneio(int[][] populacao) {
@@ -136,7 +158,7 @@ public class AlgoritmoGenetico {
 	}
 
 	/**
-	 * Cruzamento uniponto: gera dois filhos e coloca na populaï¿½ï¿½o intermediaria
+	 * Cruzamento uniponto: gera dois filhos e coloca na população intermediaria
 	 */
 	private void cruzamento(int[][] intermediaria, int[][] populacao) {
 		int[] pai;
@@ -145,12 +167,11 @@ public class AlgoritmoGenetico {
 		int corte = 10;
 		// int linha = 1;
 
-		for (int i = 1; i < TAM; i = i + 2) {
+		for (int i = 1; i < TAM -1; i = i + 2) {
 			do {
 				pai = torneio(populacao);
 				pai2 = torneio(populacao);
 			} while (pai == pai2);
-			System.out.println("Gerando dois filhos...");
 			for (int j = 0; j < corte; j++) {
 				intermediaria[i][j] = pai[j];
 				intermediaria[i + 1][j] = pai2[j];
@@ -163,12 +184,11 @@ public class AlgoritmoGenetico {
 	}
 
 	/**
-	 * Mutaï¿½ï¿½o ï¿½ uma transformaï¿½ï¿½o que ocorre no cromossomo do individuo durante sua
-	 * formaï¿½ï¿½o. A mutaï¿½ï¿½o altera os genes do cromossomo
+	 * Mutação é uma transformação que ocorre no cromossomo do individuo durante sua
+	 * formação. A mutação altera os genes do cromossomo
 	 */
 	private void mutacao(int[][] intermediaria) {
 		Random r = new Random();
-		// System.out.println("Tentando mutacao");
 
 		for (int cont = 1; cont <= 2; cont++) {
 			int linha = r.nextInt(TAM);
@@ -206,33 +226,33 @@ public class AlgoritmoGenetico {
 		return mapa;
 	}
 
-	private int[] getNovoValorLatitudeELongetude(int lat, int lng, int movimento) {
+	private int[] getNovoValorLatitudeELongetude(int latitude, int longetude, int movimento) {
 		switch (movimento) {
 		case 0:
-			lat--;
+			latitude--;
 			break;
 
 		case 1:
-			lat++;
+			latitude++;
 			break;
 
 		case 2:
-			lng--;
+			longetude--;
 			break;
 
 		case 3:
-			lng++;
+			longetude++;
 			break;
 
 		default:
 			throw new IllegalArgumentException("Movimento invalido");
 		}
-		return new int[] { lat, lng };
+		return new int[] { latitude, longetude };
 	}
 
 	/**
-	 * Analisa o mapa para ver esta nas bordas para nï¿½o dar erro e penaliza o agente
-	 * por sair do mapa
+	 * Analisa o mapa para ver esta nas bordas para nï¿½o dar erro e penaliza o
+	 * agente por sair do mapa
 	 * 
 	 */
 	private int analisaMapa(int latitude, int longetude, int[][] mapa) {
@@ -264,7 +284,7 @@ public class AlgoritmoGenetico {
 		case 8:
 			retorno = 999; // terminou
 			break;
-		case 4:// o agente nï¿½o se mexeou ficou parado
+		case 4:// o agente não se mexeou, ficou parado
 			retorno = 0;
 			break;
 		default:
